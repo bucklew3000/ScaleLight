@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scale Light — Piano Scale Practice</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+
+  :root{
+    --black-deep:    #050505;
+    --black:         #0C0C0E;
+    --black-panel:   #131316;
+    --black-light:   #1D1D21;
+    --white-key:     #FAFAF8;
+    --white-key-low: #D8D8D4;
+    --ivory:         #F2F2F4;
+    --ivory-dim:     #C7C8CD;
+    --ebony:         #050505;
+    --silver:        #A9ADB6;
+    --silver-bright: #E7E9EE;
+    --platinum:      #8D9199;
+    --text-muted:    #85868C;
+    --red:           #D9291C;
+    --red-bright:    #FF6A55;
+    --line:          rgba(255,255,255,0.10);
+  }
+
+  *{ box-sizing:border-box; }
+
+  html,body{
+    margin:0; padding:0;
+    background: radial-gradient(ellipse at 50% -10%, #1a1a1d 0%, var(--black-deep) 55%);
+    color: var(--ivory);
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body{
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    padding: 28px 16px 60px;
+  }
+
+  .stage{
+    width:100%;
+    max-width: 980px;
+  }
+
+  /* ---------- Header ---------- */
+  .eyebrow{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.18em;
+    text-transform:uppercase;
+    color: var(--silver);
+    margin:0 0 8px;
+  }
+
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size: clamp(28px, 5vw, 42px);
+    margin:0 0 6px;
+    letter-spacing:-0.01em;
+  }
+
+  .sub{
+    color: var(--text-muted);
+    font-size:14.5px;
+    margin:0 0 28px;
+    max-width:520px;
+    line-height:1.5;
+  }
+
+  /* ---------- Controls ---------- */
+  .controls{
+    display:flex;
+    flex-wrap:wrap;
+    gap:12px;
+    align-items:flex-end;
+    margin-bottom: 22px;
+    padding: 18px;
+    background: linear-gradient(180deg, var(--black-light), var(--black-panel));
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 6px 16px -10px rgba(0,0,0,0.7);
+  }
+
+  .field{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+  }
+
+  .field label{
+    font-family:'JetBrains Mono', monospace;
+    font-size:10.5px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color: var(--text-muted);
+  }
+
+  select{
+    appearance:none;
+    -webkit-appearance:none;
+    background: var(--black-light);
+    color: var(--ivory);
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    padding: 9px 34px 9px 12px;
+    font-size:14px;
+    font-family:'Inter', sans-serif;
+    font-weight:500;
+    min-width:140px;
+    cursor:pointer;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M0 0L5 6L10 0Z' fill='%23C9CDD3'/></svg>");
+    background-repeat:no-repeat;
+    background-position: right 12px center;
+  }
+
+  select:focus{
+    outline: 2px solid var(--silver);
+    outline-offset:1px;
+  }
+
+  .btn{
+    border:none;
+    border-radius:7px;
+    padding:9px 16px;
+    font-family:'Inter', sans-serif;
+    font-weight:600;
+    font-size:13.5px;
+    cursor:pointer;
+    transition: transform 0.08s ease, filter 0.15s ease;
+  }
+  .btn:active{ transform: translateY(1px); }
+  .btn:focus-visible{ outline: 2px solid var(--silver-bright); outline-offset:2px; }
+
+  .btn-brass{
+    background: linear-gradient(180deg, var(--silver-bright), var(--silver));
+    color: var(--black-deep);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.8), 0 2px 6px rgba(0,0,0,0.4);
+  }
+  .btn-brass:hover{ filter: brightness(1.06); }
+  .btn-brass:disabled{ opacity:0.6; cursor:default; }
+
+  .btn-ghost{
+    background: transparent;
+    color: var(--ivory-dim);
+    border: 1px solid var(--line);
+  }
+  .btn-ghost:hover{ border-color: var(--silver); color: var(--silver-bright); }
+
+  .btn-danger{
+    background: transparent;
+    color: var(--red-bright);
+    border: 1px solid transparent;
+    padding: 4px 8px;
+    font-size:12px;
+  }
+  .btn-danger:hover{ text-decoration:underline; }
+
+  /* ---------- Scale info strip ---------- */
+  .scale-info{
+    display:flex;
+    align-items:baseline;
+    gap:14px;
+    margin-bottom:18px;
+    flex-wrap:wrap;
+  }
+  .scale-info .name{
+    font-family:'Fraunces', serif;
+    font-size:20px;
+    font-weight:600;
+    color: var(--silver-bright);
+  }
+  .scale-info .notes{
+    font-family:'JetBrains Mono', monospace;
+    font-size:13px;
+    color: var(--text-muted);
+    letter-spacing:0.03em;
+  }
+
+  /* ---------- Piano ---------- */
+  .piano-wrap{
+    background: linear-gradient(180deg, #1c1c20, var(--black-deep));
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 22px 18px 14px;
+    margin-bottom: 26px;
+    box-shadow: 0 24px 48px -20px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.06), inset 0 -1px 0 rgba(0,0,0,0.6);
+  }
+
+  .piano{
+    position:relative;
+    height: 190px;
+    width:100%;
+    user-select:none;
+  }
+
+  .white-key{
+    position:absolute;
+    top:0;
+    height:100%;
+    background: linear-gradient(180deg, #FFFFFF 0%, var(--white-key) 60%, var(--white-key-low) 100%);
+    border: 1px solid #B9B9B6;
+    border-radius: 0 0 6px 6px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.95), inset 0 -8px 12px -6px rgba(0,0,0,0.18);
+    cursor:pointer;
+    transition: background 0.12s ease;
+  }
+  .white-key:hover{ background: linear-gradient(180deg, #FFFFFF 0%, #F3F3F0 60%, #E2E2DE 100%); }
+  .white-key.root{
+    background: linear-gradient(180deg, var(--silver-bright) 0%, var(--silver) 55%, var(--platinum) 100%);
+    border-color: #8A8D93;
+  }
+
+  .scale-dot{
+    position:absolute;
+    left:50%;
+    top: 60%;
+    transform: translate(-50%,-50%);
+    width:12px; height:12px;
+    border-radius:50%;
+    background: radial-gradient(circle at 35% 30%, var(--red-bright), var(--red) 70%);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.6), 0 0 5px rgba(217,41,28,0.45);
+    pointer-events:none;
+    z-index:3;
+  }
+  .black-key .scale-dot{
+    width:9px; height:9px;
+    top:70%;
+  }
+
+  .key-playing{
+    box-shadow: 0 0 0 3px var(--silver-bright), 0 4px 10px rgba(0,0,0,0.5) !important;
+    z-index: 5;
+  }
+
+  .black-key{
+    position:absolute;
+    top:0;
+    height: 62%;
+    background: linear-gradient(180deg, #2C2C30 0%, #0A0A0B 55%, var(--ebony) 100%);
+    border: 1px solid #000;
+    border-radius: 0 0 5px 5px;
+    z-index:2;
+    cursor:pointer;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.65), inset 0 1px 0 rgba(255,255,255,0.12);
+  }
+  .black-key:hover{ background: linear-gradient(180deg, #3A3A3F, #050505); }
+  .black-key.root{
+    background: linear-gradient(180deg, var(--platinum) 0%, #45474D 60%, #1E1F22 100%);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.65), inset 0 1px 0 rgba(255,255,255,0.35);
+  }
+
+  .key-label{
+    position:absolute;
+    bottom:8px;
+    left:0;
+    right:0;
+    text-align:center;
+    font-family:'JetBrains Mono', monospace;
+    font-size:10px;
+    font-weight:600;
+    color: rgba(10,10,10,0.5);
+    pointer-events:none;
+  }
+  .black-key .key-label{ color: rgba(242,242,244,0.5); bottom:6px; font-size:8.5px; }
+
+  /* ---------- Save panel ---------- */
+  .save-panel{
+    background: linear-gradient(180deg, var(--black-light), var(--black-panel));
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 18px;
+    margin-bottom: 22px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+  }
+
+  .save-panel h2{
+    font-family:'Fraunces', serif;
+    font-size:17px;
+    font-weight:600;
+    margin: 0 0 4px;
+  }
+  .save-panel p{
+    color: var(--text-muted);
+    font-size:13px;
+    margin: 0 0 14px;
+    line-height:1.5;
+  }
+
+  .degree-picker{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-bottom:16px;
+  }
+
+  .degree-btn{
+    width:44px; height:44px;
+    border-radius:8px;
+    border: 1px solid var(--line);
+    background: var(--black-light);
+    color: var(--ivory-dim);
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    font-weight:600;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition: all 0.12s ease;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+  }
+  .degree-btn.on{
+    background: linear-gradient(180deg, var(--silver-bright), var(--silver));
+    color: var(--black-deep);
+    border-color: transparent;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
+  }
+  .degree-btn.locked{
+    background: linear-gradient(180deg, var(--platinum), #45474D);
+    color: var(--white-key);
+    cursor:default;
+  }
+  .degree-btn:focus-visible{ outline:2px solid var(--silver-bright); outline-offset:2px; }
+
+  .save-row{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+
+  input[type="text"]{
+    flex:1;
+    min-width:180px;
+    background: var(--black-light);
+    border: 1px solid var(--line);
+    border-radius:7px;
+    padding: 9px 12px;
+    color: var(--ivory);
+    font-family:'Inter', sans-serif;
+    font-size:14px;
+  }
+  input[type="text"]:focus{ outline:2px solid var(--silver); outline-offset:1px; }
+  input[type="text"]::placeholder{ color: var(--text-muted); }
+
+  .save-msg{
+    font-size:12.5px;
+    margin-top:8px;
+    color: var(--text-muted);
+    min-height:16px;
+  }
+  .save-msg.err{ color: var(--red-bright); }
+  .save-msg.ok{ color: #B8E0A8; }
+
+  /* ---------- Saved scales ---------- */
+  .saved-section h2{
+    font-family:'Fraunces', serif;
+    font-size:17px;
+    font-weight:600;
+    margin: 0 0 12px;
+  }
+
+  .chips{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+  }
+
+  .chip{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background: var(--black-light);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 7px 8px 7px 14px;
+    font-size:13px;
+    color: var(--ivory-dim);
+    cursor:pointer;
+    transition: border-color 0.12s ease;
+  }
+  .chip:hover{ border-color: var(--silver); }
+  .chip.selected{ border-color: var(--silver-bright); color: var(--silver-bright); }
+
+  .empty-note{
+    color: var(--text-muted);
+    font-size:13px;
+    font-style:italic;
+  }
+
+  footer{
+    margin-top: 30px;
+    color: var(--text-muted);
+    font-size:12px;
+    text-align:center;
+  }
+
+  @media (max-width:520px){
+    .piano{ height:160px; }
+    .key-label{ font-size:9px; }
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+
+  <p class="eyebrow">Practice Room</p>
+  <h1>Scale Light</h1>
+  <p class="sub">Pick a root and a scale, and the keys light up across two octaves — brass for the scale, copper for the root. Build your own scales and keep them for next time.</p>
+
+  <div class="controls">
+    <div class="field">
+      <label for="root-select">Root</label>
+      <select id="root-select"></select>
+    </div>
+    <div class="field">
+      <label for="scale-select">Scale</label>
+      <select id="scale-select"></select>
+    </div>
+    <div class="field">
+      <label>&nbsp;</label>
+      <button class="btn btn-brass" id="play-scale-btn">▶ Play scale</button>
+    </div>
+    <div class="field">
+      <label>&nbsp;</label>
+      <button class="btn btn-ghost" id="sound-toggle">🔊 Sound on</button>
+    </div>
+  </div>
+
+  <div class="scale-info">
+    <span class="name" id="scale-name">C Major</span>
+    <span class="notes" id="scale-notes">C – D – E – F – G – A – B</span>
+  </div>
+
+  <div class="piano-wrap">
+    <div class="piano" id="piano"></div>
+  </div>
+
+  <div class="save-panel">
+    <h2>Build a scale</h2>
+    <p>Root is always included. Tap the other scale degrees (in semitones from the root) to shape your own scale, then save it.</p>
+    <div class="degree-picker" id="degree-picker"></div>
+    <div class="save-row">
+      <input type="text" id="scale-name-input" placeholder="Name this scale, e.g. My Bebop Run" maxlength="40">
+      <button class="btn btn-brass" id="save-scale-btn">Save scale</button>
+    </div>
+    <div class="save-msg" id="save-msg"></div>
+  </div>
+
+  <div class="saved-section">
+    <h2>My saved scales</h2>
+    <div class="chips" id="saved-chips">
+      <span class="empty-note">Nothing saved yet — build one above.</span>
+    </div>
+  </div>
+
+  <footer>Two octaves, C4 – B5 · click any key to hear it</footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  const NOTE_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+
+  const BUILT_IN_SCALES = [
+    { name:'Major',                 intervals:[0,2,4,5,7,9,11] },
+    { name:'Natural Minor',         intervals:[0,2,3,5,7,8,10] },
+    { name:'Harmonic Minor',        intervals:[0,2,3,5,7,8,11] },
+    { name:'Melodic Minor',         intervals:[0,2,3,5,7,9,11] },
+    { name:'Major Pentatonic',      intervals:[0,2,4,7,9] },
+    { name:'Minor Pentatonic',      intervals:[0,3,5,7,10] },
+    { name:'Blues',                 intervals:[0,3,5,6,7,10] },
+    { name:'Dorian',                intervals:[0,2,3,5,7,9,10] },
+    { name:'Phrygian',              intervals:[0,1,3,5,7,8,10] },
+    { name:'Lydian',                intervals:[0,2,4,6,7,9,11] },
+    { name:'Mixolydian',            intervals:[0,2,4,5,7,9,10] },
+    { name:'Locrian',               intervals:[0,1,3,5,6,8,10] },
+    { name:'Chromatic',             intervals:[0,1,2,3,4,5,6,7,8,9,10,11] }
+  ];
+
+  const STORAGE_KEY = 'custom-scales';
+
+  let customScales = [];
+  let soundOn = true;
+  let audioCtx = null;
+
+  // ---------- State ----------
+  let state = {
+    root: 0,           // 0-11
+    scaleId: 'builtin:Major'
+  };
+
+  // ---------- Build piano key layout ----------
+  // 2 octaves, starting at C (octave index 0 and 1), 14 white keys, 10 black keys.
+  const WHITE_PC = [0,2,4,5,7,9,11];       // pitch classes with a white key
+  const BLACK_AFTER = [0,1,3,4,5];         // local white-index positions that have a black key right after them
+
+  function buildKeyData(){
+    const whites = [];
+    const blacks = [];
+    for(let oct=0; oct<2; oct++){
+      for(let i=0;i<7;i++){
+        const pc = WHITE_PC[i];
+        whites.push({ pc, octave:oct, whiteIndex: oct*7+i });
+      }
+      for(let i=0;i<BLACK_AFTER.length;i++){
+        const localIdx = BLACK_AFTER[i];
+        const pc = WHITE_PC[localIdx] + 1;
+        blacks.push({ pc, octave:oct, afterWhiteIndex: oct*7+localIdx });
+      }
+    }
+    return { whites, blacks };
+  }
+
+  const { whites, blacks } = buildKeyData();
+  const TOTAL_WHITE = whites.length; // 14
+
+  // ---------- Audio ----------
+  function ensureAudio(){
+    if(!audioCtx){
+      try{
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }catch(e){ soundOn = false; }
+    }
+    return audioCtx;
+  }
+
+  function playNote(pc, octave){
+    if(!soundOn) return;
+    const ctx = ensureAudio();
+    if(!ctx) return;
+    // A4 = 440Hz, MIDI 69. Our octave 0 = piano octave 4.
+    const midi = 12*(octave+4) + pc + 12; // C4 = midi 60
+    const freq = 440 * Math.pow(2, (midi-69)/12);
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.18, ctx.currentTime + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.9);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.9);
+  }
+
+  function sleep(ms){
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  let isPlayingScale = false;
+
+  async function playScale(){
+    if(isPlayingScale) return;
+    const scale = findScale(state.scaleId);
+    if(!scale) return;
+
+    // Ascending offsets from root, always ending at the octave-up root (12).
+    const offsets = Array.from(new Set(scale.intervals)).sort((a,b) => a-b);
+    if(offsets[offsets.length-1] !== 12) offsets.push(12);
+
+    // Descend back down, skipping the top note so it isn't played twice.
+    const descending = offsets.slice(0, -1).reverse();
+    const sequence = offsets.concat(descending);
+
+    isPlayingScale = true;
+    const btn = document.getElementById('play-scale-btn');
+    btn.disabled = true;
+    btn.textContent = '♪ Playing…';
+
+    const NOTE_MS = 320;
+    for(const offset of sequence){
+      const absolute = state.root + offset;
+      const pc = ((absolute % 12) + 12) % 12;
+      const octave = Math.floor(absolute / 12);
+      playNote(pc, octave);
+
+      const keyEl = pianoEl.querySelector('[data-pc="'+pc+'"][data-octave="'+octave+'"]');
+      if(keyEl){
+        keyEl.classList.add('key-playing');
+        setTimeout(() => keyEl.classList.remove('key-playing'), NOTE_MS - 20);
+      }
+
+      await sleep(NOTE_MS);
+    }
+
+    isPlayingScale = false;
+    btn.disabled = false;
+    btn.textContent = '▶ Play scale';
+  }
+
+  // ---------- Scale resolution ----------
+  function getAllScales(){
+    const builtins = BUILT_IN_SCALES.map(s => ({ id:'builtin:'+s.name, name:s.name, intervals:s.intervals, custom:false }));
+    const customs = customScales.map(s => ({ id:'custom:'+s.name, name:s.name, intervals:s.intervals, custom:true }));
+    return builtins.concat(customs);
+  }
+
+  function findScale(id){
+    return getAllScales().find(s => s.id === id);
+  }
+
+  function activePitchClasses(){
+    const scale = findScale(state.scaleId);
+    if(!scale) return new Set();
+    const set = new Set();
+    scale.intervals.forEach(iv => set.add((state.root + iv) % 12));
+    return set;
+  }
+
+  // Only show dots from the root up through the root repeated one octave
+  // higher — nothing below the root, nothing past the octave.
+  function withinOneOctave(pc, octave){
+    const absPos = octave*12 + pc;
+    return absPos >= state.root && absPos <= state.root + 12;
+  }
+
+  // ---------- Rendering: Piano ----------
+  const pianoEl = document.getElementById('piano');
+
+  function renderPiano(){
+    pianoEl.innerHTML = '';
+    const active = activePitchClasses();
+    const whiteWidthPct = 100/TOTAL_WHITE;
+    const blackWidthPct = whiteWidthPct * 0.62;
+
+    whites.forEach(w => {
+      const div = document.createElement('div');
+      div.className = 'white-key';
+      div.dataset.pc = w.pc;
+      div.dataset.octave = w.octave;
+      const isRoot = w.pc === state.root && w.octave === 0;
+      const isActive = active.has(w.pc) && withinOneOctave(w.pc, w.octave);
+      if(isRoot) div.classList.add('root');
+      div.style.left = (w.whiteIndex * whiteWidthPct) + '%';
+      div.style.width = whiteWidthPct + '%';
+
+      const label = document.createElement('div');
+      label.className = 'key-label';
+      label.textContent = NOTE_NAMES[w.pc].replace('#','');
+      div.appendChild(label);
+
+      if(isRoot){
+        const dot = document.createElement('div');
+        dot.className = 'scale-dot';
+        div.appendChild(dot);
+      }else if(isActive){
+        const dot = document.createElement('div');
+        dot.className = 'scale-dot';
+        div.appendChild(dot);
+      }
+
+      div.addEventListener('click', () => playNote(w.pc, w.octave));
+      pianoEl.appendChild(div);
+    });
+
+    blacks.forEach(b => {
+      const div = document.createElement('div');
+      div.className = 'black-key';
+      div.dataset.pc = b.pc;
+      div.dataset.octave = b.octave;
+      const isRoot = b.pc === state.root && b.octave === 0;
+      const isActive = active.has(b.pc) && withinOneOctave(b.pc, b.octave);
+      if(isRoot) div.classList.add('root');
+      const centerPct = (b.afterWhiteIndex+1) * whiteWidthPct;
+      div.style.left = (centerPct - blackWidthPct/2) + '%';
+      div.style.width = blackWidthPct + '%';
+
+      if(isRoot){
+        const dot = document.createElement('div');
+        dot.className = 'scale-dot';
+        div.appendChild(dot);
+      }else if(isActive){
+        const dot = document.createElement('div');
+        dot.className = 'scale-dot';
+        div.appendChild(dot);
+      }
+
+      div.addEventListener('click', (e) => { e.stopPropagation(); playNote(b.pc, b.octave); });
+      pianoEl.appendChild(div);
+    });
+  }
+
+  // ---------- Rendering: info strip ----------
+  function renderInfo(){
+    const scale = findScale(state.scaleId);
+    const rootName = NOTE_NAMES[state.root];
+    document.getElementById('scale-name').textContent = rootName + ' ' + (scale ? scale.name : '');
+    if(scale){
+      const names = scale.intervals.map(iv => NOTE_NAMES[(state.root+iv)%12]);
+      document.getElementById('scale-notes').textContent = names.join(' – ');
+    }
+  }
+
+  // ---------- Dropdowns ----------
+  const rootSelect = document.getElementById('root-select');
+  const scaleSelect = document.getElementById('scale-select');
+
+  function renderRootSelect(){
+    rootSelect.innerHTML = '';
+    NOTE_NAMES.forEach((n, i) => {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = n;
+      rootSelect.appendChild(opt);
+    });
+    rootSelect.value = state.root;
+  }
+
+  function renderScaleSelect(){
+    scaleSelect.innerHTML = '';
+    const builtinGroup = document.createElement('optgroup');
+    builtinGroup.label = 'Basic Scales';
+    BUILT_IN_SCALES.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = 'builtin:'+s.name;
+      opt.textContent = s.name;
+      builtinGroup.appendChild(opt);
+    });
+    scaleSelect.appendChild(builtinGroup);
+
+    if(customScales.length){
+      const customGroup = document.createElement('optgroup');
+      customGroup.label = 'My Scales';
+      customScales.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = 'custom:'+s.name;
+        opt.textContent = s.name;
+        customGroup.appendChild(opt);
+      });
+      scaleSelect.appendChild(customGroup);
+    }
+
+    scaleSelect.value = state.scaleId;
+    if(scaleSelect.value !== state.scaleId){
+      // saved scale was renamed/removed, fall back
+      state.scaleId = 'builtin:Major';
+      scaleSelect.value = state.scaleId;
+    }
+  }
+
+  // ---------- Degree picker (scale builder) ----------
+  const degreePicker = document.getElementById('degree-picker');
+  let builderDegrees = new Set([0]);
+
+  function renderDegreePicker(){
+    degreePicker.innerHTML = '';
+    for(let i=0;i<12;i++){
+      const btn = document.createElement('button');
+      btn.className = 'degree-btn';
+      btn.type = 'button';
+      btn.textContent = '+' + i;
+      if(i === 0){
+        btn.classList.add('locked');
+        btn.title = 'Root (always included)';
+      }else{
+        if(builderDegrees.has(i)) btn.classList.add('on');
+        btn.addEventListener('click', () => {
+          if(builderDegrees.has(i)) builderDegrees.delete(i);
+          else builderDegrees.add(i);
+          renderDegreePicker();
+        });
+      }
+      degreePicker.appendChild(btn);
+    }
+  }
+
+  // ---------- Saved scales chips ----------
+  const savedChips = document.getElementById('saved-chips');
+
+  function renderSavedChips(){
+    savedChips.innerHTML = '';
+    if(!customScales.length){
+      const empty = document.createElement('span');
+      empty.className = 'empty-note';
+      empty.textContent = 'Nothing saved yet — build one above.';
+      savedChips.appendChild(empty);
+      return;
+    }
+    customScales.forEach(s => {
+      const chip = document.createElement('div');
+      chip.className = 'chip';
+      if(state.scaleId === 'custom:'+s.name) chip.classList.add('selected');
+
+      const label = document.createElement('span');
+      label.textContent = s.name;
+      chip.appendChild(label);
+
+      const del = document.createElement('button');
+      del.className = 'btn-danger';
+      del.textContent = '✕';
+      del.title = 'Delete';
+      del.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        await deleteCustomScale(s.name);
+      });
+      chip.appendChild(del);
+
+      chip.addEventListener('click', () => {
+        state.scaleId = 'custom:'+s.name;
+        renderAll();
+      });
+
+      savedChips.appendChild(chip);
+    });
+  }
+
+  // ---------- Storage ----------
+  // Uses the browser's own localStorage, so saved scales persist on this
+  // device once the app is hosted outside Claude (GitHub Pages, Netlify, etc).
+  async function loadCustomScales(){
+    try{
+      const raw = window.localStorage.getItem(STORAGE_KEY);
+      if(raw){
+        customScales = JSON.parse(raw);
+      }
+    }catch(e){
+      // no saved scales yet, or storage unavailable (e.g. private browsing) — start empty
+      customScales = [];
+    }
+  }
+
+  async function persistCustomScales(){
+    try{
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(customScales));
+      return true;
+    }catch(e){
+      return false;
+    }
+  }
+
+  async function saveScale(){
+    const msgEl = document.getElementById('save-msg');
+    const nameInput = document.getElementById('scale-name-input');
+    const name = nameInput.value.trim();
+
+    if(!name){
+      msgEl.textContent = 'Give your scale a name first.';
+      msgEl.className = 'save-msg err';
+      return;
+    }
+    if(builderDegrees.size < 2){
+      msgEl.textContent = 'Add at least one degree beyond the root.';
+      msgEl.className = 'save-msg err';
+      return;
+    }
+    const nameTaken = customScales.some(s => s.name.toLowerCase() === name.toLowerCase())
+      || BUILT_IN_SCALES.some(s => s.name.toLowerCase() === name.toLowerCase());
+    if(nameTaken){
+      msgEl.textContent = 'That name is already in use — try another.';
+      msgEl.className = 'save-msg err';
+      return;
+    }
+
+    const intervals = Array.from(builderDegrees).sort((a,b) => a-b);
+    customScales.push({ name, intervals });
+
+    const ok = await persistCustomScales();
+    if(!ok){
+      customScales.pop();
+      msgEl.textContent = 'Could not save right now — try again.';
+      msgEl.className = 'save-msg err';
+      return;
+    }
+
+    msgEl.textContent = 'Saved "' + name + '".';
+    msgEl.className = 'save-msg ok';
+    nameInput.value = '';
+    builderDegrees = new Set([0]);
+    state.scaleId = 'custom:'+name;
+    renderAll();
+  }
+
+  async function deleteCustomScale(name){
+    const idx = customScales.findIndex(s => s.name === name);
+    if(idx === -1) return;
+    const removed = customScales.splice(idx,1)[0];
+    const ok = await persistCustomScales();
+    if(!ok){
+      customScales.splice(idx,0,removed);
+      return;
+    }
+    if(state.scaleId === 'custom:'+name){
+      state.scaleId = 'builtin:Major';
+    }
+    renderAll();
+  }
+
+  // ---------- Wire up controls ----------
+  rootSelect.addEventListener('change', () => {
+    state.root = parseInt(rootSelect.value, 10);
+    renderAll();
+  });
+
+  scaleSelect.addEventListener('change', () => {
+    state.scaleId = scaleSelect.value;
+    renderAll();
+  });
+
+  document.getElementById('save-scale-btn').addEventListener('click', saveScale);
+
+  document.getElementById('play-scale-btn').addEventListener('click', playScale);
+
+  document.getElementById('sound-toggle').addEventListener('click', (e) => {
+    soundOn = !soundOn;
+    e.target.textContent = soundOn ? '🔊 Sound on' : '🔇 Sound off';
+  });
+
+  // ---------- Render orchestration ----------
+  function renderAll(){
+    renderRootSelect();
+    renderScaleSelect();
+    renderPiano();
+    renderInfo();
+    renderSavedChips();
+  }
+
+  // ---------- Init ----------
+  (async function init(){
+    await loadCustomScales();
+    renderDegreePicker();
+    renderAll();
+  })();
+
+})();
+</script>
+</body>
+</html>
