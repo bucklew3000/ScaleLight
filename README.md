@@ -1,0 +1,1 @@
+Scale Light is a basic and user friendly piano scale app.  Users are able to load, transpose, and hear playback of a scale.  There are a handful of default scales.  Also, users can add and customize additional scales for practice.  This is what makes Scale Light a must have for your practice room. 
